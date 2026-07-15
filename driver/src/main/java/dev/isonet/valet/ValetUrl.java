@@ -44,9 +44,10 @@ public final class ValetUrl {
     private static final String P_IDLE_TIMEOUT = "boundary.idle-timeout";
     private static final String P_CREDENTIAL_NAME = "boundary.credential-name";
     private static final String P_BROKERED = "boundary.brokered-credentials";
+    private static final String P_TARGET_ID = "boundary.target-id";
 
     private static final Set<String> KNOWN_PARAMS = Set.of(
-            P_ADDR, P_CLI_PATH, P_CONNECT_TIMEOUT, P_IDLE_TIMEOUT, P_CREDENTIAL_NAME, P_BROKERED);
+            P_ADDR, P_CLI_PATH, P_CONNECT_TIMEOUT, P_IDLE_TIMEOUT, P_CREDENTIAL_NAME, P_BROKERED, P_TARGET_ID);
 
     private final String scopeName;
     private final String targetName;
@@ -57,12 +58,13 @@ public final class ValetUrl {
     private final Duration idleTimeout;
     private final Optional<String> credentialName;
     private final boolean brokeredCredentials;
+    private final Optional<String> targetId;   // boundary.target-id: pin the target, skip name resolution
     private final String passThroughQuery;     // "" or "?a=b&c=d", verbatim
 
     private ValetUrl(String scopeName, String targetName, String database, String controllerAddr,
                      String cliPath, Duration connectTimeout, Duration idleTimeout,
                      Optional<String> credentialName, boolean brokeredCredentials,
-                     String passThroughQuery) {
+                     Optional<String> targetId, String passThroughQuery) {
         this.scopeName = scopeName;
         this.targetName = targetName;
         this.database = database;
@@ -72,6 +74,7 @@ public final class ValetUrl {
         this.idleTimeout = idleTimeout;
         this.credentialName = credentialName;
         this.brokeredCredentials = brokeredCredentials;
+        this.targetId = targetId;
         this.passThroughQuery = passThroughQuery;
     }
 
@@ -146,11 +149,12 @@ public final class ValetUrl {
                 P_IDLE_TIMEOUT, url);
         Optional<String> credentialName = Optional.ofNullable(trimToNull(boundaryParams.get(P_CREDENTIAL_NAME)));
         boolean brokered = parseBool(boundaryParams.getOrDefault(P_BROKERED, "true"), P_BROKERED, url);
+        Optional<String> targetId = Optional.ofNullable(trimToNull(boundaryParams.get(P_TARGET_ID)));
 
         String passThroughQuery = passThrough.length() > 0 ? "?" + passThrough : "";
 
         return new ValetUrl(scope, target, database, addr, cliPath, connectTimeout, idleTimeout,
-                credentialName, brokered, passThroughQuery);
+                credentialName, brokered, targetId, passThroughQuery);
     }
 
     public String scopeName() {
@@ -187,6 +191,15 @@ public final class ValetUrl {
 
     public boolean brokeredCredentials() {
         return brokeredCredentials;
+    }
+
+    /**
+     * The {@code boundary.target-id} (a {@code ttcp_…} id), if given. When present the target
+     * is resolved by id (bypassing scope/target-name resolution); the scope and target URL
+     * segments are then ignored for resolution.
+     */
+    public Optional<String> targetId() {
+        return targetId;
     }
 
     /** The non-boundary parameters, ready to append to the delegate URL ({@code ""} or {@code "?…"}). */
@@ -292,6 +305,7 @@ public final class ValetUrl {
 
     /** Known boundary parameter names — exposed for {@code getPropertyInfo} and tests. */
     static List<String> knownParams() {
-        return List.of(P_ADDR, P_CLI_PATH, P_CONNECT_TIMEOUT, P_IDLE_TIMEOUT, P_CREDENTIAL_NAME, P_BROKERED);
+        return List.of(P_ADDR, P_CLI_PATH, P_CONNECT_TIMEOUT, P_IDLE_TIMEOUT, P_CREDENTIAL_NAME, P_BROKERED,
+                P_TARGET_ID);
     }
 }

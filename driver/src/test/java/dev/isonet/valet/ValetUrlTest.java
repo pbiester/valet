@@ -143,4 +143,19 @@ class ValetUrlTest {
         ValetUrl u = ValetUrl.parse("jdbc:boundary://s/t/d?boundary.connect-timeout=45");
         assertEquals(Duration.ofSeconds(45), u.connectTimeout());
     }
+
+    @Test
+    void parsesTargetId() throws Exception {
+        ValetUrl u = ValetUrl.parse("jdbc:boundary://s/t/d?boundary.target-id=ttcp_1234567890");
+        assertEquals("ttcp_1234567890", u.targetId().orElseThrow());
+        // The scope/target segments are still required by the grammar even when an id is given.
+        assertEquals("s", u.scopeName());
+        assertEquals("t", u.targetName());
+        assertEquals("d", u.database());
+    }
+
+    @Test
+    void targetIdAbsentByDefault() throws Exception {
+        assertTrue(ValetUrl.parse("jdbc:boundary://s/t/d").targetId().isEmpty());
+    }
 }

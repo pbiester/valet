@@ -67,7 +67,9 @@ public final class ValetDriver implements Driver {
 
         ValetUrl parsed = ValetUrl.parse(url);
         SessionManager manager = manager(parsed);
-        TargetKey key = new TargetKey(parsed.controllerAddr(), parsed.scopeName(), parsed.targetName());
+        TargetKey key = parsed.targetId()
+                .map(id -> TargetKey.byId(parsed.controllerAddr(), id))
+                .orElseGet(() -> new TargetKey(parsed.controllerAddr(), parsed.scopeName(), parsed.targetName()));
 
         SessionManager.Handle handle = manager.acquire(key);
         try {
@@ -173,7 +175,7 @@ public final class ValetDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) {
-        DriverPropertyInfo[] props = new DriverPropertyInfo[6];
+        DriverPropertyInfo[] props = new DriverPropertyInfo[7];
         props[0] = describe("boundary.addr", "Boundary controller URL (defaults to $BOUNDARY_ADDR).");
         props[1] = describe("boundary.cli-path", "Absolute path to the boundary CLI (defaults to discovery).");
         props[2] = describe("boundary.connect-timeout", "How long to wait for a session (default 30s).");
@@ -183,6 +185,8 @@ public final class ValetDriver implements Driver {
                 describe("boundary.brokered-credentials", "false = use caller credentials (default true).");
         brokered.choices = new String[]{"true", "false"};
         props[5] = brokered;
+        props[6] = describe("boundary.target-id",
+                "Resolve the target by ttcp_ id instead of scope/target name.");
         return props;
     }
 
