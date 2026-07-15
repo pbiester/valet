@@ -152,12 +152,8 @@ public final class ProcessBoundaryCli implements BoundaryCli {
         List<String> cmd = new ArrayList<>();
         cmd.add(cliBinary);
         cmd.add("connect");
-        if (key.targetId() != null) {
-            cmd.add("-target-id=" + key.targetId());
-        } else {
-            cmd.add("-target-scope-name=" + key.scopeName());
-            cmd.add("-target-name=" + key.targetName());
-        }
+        cmd.add("-target-scope-name=" + key.scopeName());
+        cmd.add("-target-name=" + key.targetName());
         if (key.controllerAddr() != null && !key.controllerAddr().isBlank()) {
             cmd.add("-addr=" + key.controllerAddr());
         }

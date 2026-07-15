@@ -52,7 +52,7 @@ class ValetDriverTest {
 
     @Test
     void reportsBoundaryPropertyInfo() {
-        assertEquals(7, driver.getPropertyInfo("jdbc:boundary://s/t/d", null).length);
+        assertEquals(6, driver.getPropertyInfo("jdbc:boundary://s/t/d", null).length);
         assertEquals("boundary.addr", driver.getPropertyInfo("jdbc:boundary://s/t/d", null)[0].name);
     }
 

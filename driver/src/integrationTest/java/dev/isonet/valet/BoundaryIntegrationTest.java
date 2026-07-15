@@ -68,7 +68,7 @@ class BoundaryIntegrationTest {
         assumePrerequisites();
         try (PostgreSQLContainer<?> pg = newPostgres()) {
             pg.start();
-            String url = nameUrl(provisionBrokeredTarget(pg));
+            String url = provisionBrokeredTarget(pg);
             assertFalse(url.contains(pg.getPassword()), "the password must not appear in the URL");
 
             try (Connection c = DriverManager.getConnection(url, new Properties());
@@ -85,7 +85,7 @@ class BoundaryIntegrationTest {
         assumePrerequisites();
         try (PostgreSQLContainer<?> pg = newPostgres()) {
             pg.start();
-            String url = nameUrl(provisionBrokeredTarget(pg));
+            String url = provisionBrokeredTarget(pg);
 
             HikariConfig cfg = new HikariConfig();
             cfg.setJdbcUrl(url);                 // no user/password — Valet brokers them
@@ -136,7 +136,7 @@ class BoundaryIntegrationTest {
 
         try (PostgreSQLContainer<?> pg = newPostgres()) {
             pg.start();
-            String url = nameUrl(provisionBrokeredTarget(pg));
+            String url = provisionBrokeredTarget(pg);
 
             // Only the bundle jar is visible; the parent is the platform loader, so the app
             // classpath's driver/PGJDBC/Jackson are hidden — the loading model of a JetBrains
@@ -161,25 +161,6 @@ class BoundaryIntegrationTest {
         }
     }
 
-    @Test
-    void brokersWhenTargetIsPinnedById() throws Exception {
-        assumePrerequisites();
-        try (PostgreSQLContainer<?> pg = newPostgres()) {
-            pg.start();
-            Provisioned p = provisionBrokeredTarget(pg);
-            // Resolve by ttcp_ id (the boundary.target-id escape hatch), bypassing name resolution.
-            String url = idUrl(p);
-            assertTrue(url.contains("boundary.target-id=" + p.targetId()));
-
-            try (Connection c = DriverManager.getConnection(url, new Properties());
-                 Statement st = c.createStatement();
-                 ResultSet rs = st.executeQuery("SELECT 1")) {
-                assertTrue(rs.next());
-                assertEquals(1, rs.getInt(1));
-            }
-        }
-    }
-
     // ---- shared provisioning ----
 
     private static PostgreSQLContainer<?> newPostgres() {
@@ -189,8 +170,8 @@ class BoundaryIntegrationTest {
                 .withDatabaseName("appdb");
     }
 
-    /** Provision a Boundary target that brokers {@code pg}'s credential. */
-    private Provisioned provisionBrokeredTarget(PostgreSQLContainer<?> pg) throws Exception {
+    /** Provision a Boundary target that brokers {@code pg}'s credential; return the Valet URL. */
+    private String provisionBrokeredTarget(PostgreSQLContainer<?> pg) throws Exception {
         Scope scope = firstProjectScope();
         String targetName = "valet-it-" + UUID.randomUUID().toString().substring(0, 8);
 
@@ -209,21 +190,11 @@ class BoundaryIntegrationTest {
         run(Map.of(), "targets", "add-credential-sources",
                 "-id=" + targetId, "-brokered-credential-source=" + credentialId, "-format=json");
 
-        return new Provisioned(scope.name(), targetName, targetId, pg.getDatabaseName());
-    }
-
-    /** Name-based Valet URL (scope/target names). */
-    private static String nameUrl(Provisioned p) {
         return "jdbc:boundary://"
-                + ValetDriver.encodePathSegment(p.scopeName()) + "/"
-                + ValetDriver.encodePathSegment(p.targetName()) + "/"
-                + ValetDriver.encodePathSegment(p.database())
+                + ValetDriver.encodePathSegment(scope.name()) + "/"
+                + ValetDriver.encodePathSegment(targetName) + "/"
+                + ValetDriver.encodePathSegment(pg.getDatabaseName())
                 + "?boundary.cli-path=" + BOUNDARY.replace(" ", "%20");
-    }
-
-    /** Id-based Valet URL — the scope/target segments are present but ignored; the id resolves. */
-    private static String idUrl(Provisioned p) {
-        return nameUrl(p) + "&boundary.target-id=" + p.targetId();
     }
 
     private Scope firstProjectScope() throws Exception {
@@ -291,8 +262,6 @@ class BoundaryIntegrationTest {
     }
 
     private record Scope(String id, String name) {}
-
-    private record Provisioned(String scopeName, String targetName, String targetId, String database) {}
 
     private record Result(int exitCode, String out, String err) {}
 }

@@ -128,7 +128,6 @@ Any parameter **not** prefixed `boundary.` is passed straight through to PGJDBC
 | `boundary.idle-timeout` | `60s` | Grace before an unused session is torn down |
 | `boundary.credential-name` | — | Pick one when a target brokers several credentials |
 | `boundary.brokered-credentials` | `true` | `false` = use the caller's user/password instead |
-| `boundary.target-id` | — | Resolve the target by `ttcp_…` id instead of scope/target name (for deployments where name resolution is ambiguous). The scope/target segments are then ignored. |
 
 ### CLI discovery
 
