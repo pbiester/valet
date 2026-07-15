@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: unit (${{ matrix.os }}, JDK ${{ matrix.java }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        java: [ '17', '21' ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - uses: gradle/actions/setup-gradle@v4
+      # The subprocess tests (ProcessBoundaryCli) require a POSIX shell and self-skip on
+      # Windows; every OS-independent test still runs there.
+      - run: ./gradlew build
+        shell: bash
+
+  integration:
+    name: integration (ubuntu, boundary dev)
+    runs-on: ubuntu-latest
+    env:
+      BOUNDARY_VERSION: '0.21.3'
+      ADMIN_PW: password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      # The build downloads (and checksum-verifies) the boundary CLI itself — no manual install.
+      - name: Download boundary CLI
+        run: ./gradlew :driver:downloadBoundary
+
+      # boundary dev, authentication, and the tests share one shell so the background
+      # controller stays up and BOUNDARY_TOKEN reaches the test JVM (which Valet's spawned
+      # `boundary connect` subprocess inherits — Valet performs no auth of its own, §2.2).
+      - name: Integration tests (boundary dev + Testcontainers)
+        run: |
+          set -euo pipefail
+          BIN="$PWD/.boundary/${BOUNDARY_VERSION}/boundary"
+          export BOUNDARY_ADDR="http://127.0.0.1:9200"
+          "$BIN" dev -id-suffix=1234567890 -password="$ADMIN_PW" > boundary-dev.log 2>&1 &
+          DEV_PID=$!
+          trap 'kill $DEV_PID 2>/dev/null || true' EXIT
+
+          for i in $(seq 1 60); do
+            if "$BIN" authenticate password -auth-method-id=ampw_1234567890 -login-name=admin \
+                 -password=env://ADMIN_PW -keyring-type=none -format=json > auth.json 2>/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+          TOKEN=$(jq -r '.item.attributes.token // .item.token // (.. | .token? // empty)' auth.json | head -1)
+          test -n "$TOKEN" && test "$TOKEN" != null || { echo "auth failed"; cat boundary-dev.log; exit 1; }
+          export BOUNDARY_TOKEN="$TOKEN"
+
+          ./gradlew integrationTest

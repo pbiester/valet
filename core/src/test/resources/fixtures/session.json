@@ -1,0 +1,24 @@
+{
+  "address": "127.0.0.1",
+  "port": 63102,
+  "protocol": "tcp",
+  "expiration": "2026-07-15T18:41:33.920001Z",
+  "connection_limit": -1,
+  "session_id": "s_EXAMPLE00001",
+  "credentials": [
+    {
+      "credential_source": {
+        "id": "credup_EXAMPLE0001",
+        "name": "example-credential",
+        "credential_store_id": "csst_EXAMPLE0001",
+        "type": "static",
+        "credential_type": "username_password"
+      },
+      "secret": {
+        "raw": "eyJwYXNzd29yZCI6ImV4YW1wbGUtcGFzc3dvcmQiLCJ1c2VybmFtZSI6ImV4YW1wbGUtdXNlciJ9",
+        "decoded": { "password": "example-password", "username": "example-user" }
+      },
+      "credential": { "password": "example-password", "username": "example-user" }
+    }
+  ]
+}
