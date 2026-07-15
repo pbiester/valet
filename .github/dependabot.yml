@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # Keep the GitHub Actions used by ci.yml / release.yml current.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # Keep the Gradle dependencies (version catalog + build scripts) current.
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      gradle-minor-patch:
+        update-types: ["minor", "patch"]

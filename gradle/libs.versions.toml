@@ -4,8 +4,8 @@ postgresql = "42.7.13"
 junit = "6.1.2"
 testcontainers = "1.21.4"
 shadow = "9.5.1"
-hikaricp = "5.1.0"
-slf4j = "2.0.16"
+hikaricp = "7.1.0"
+slf4j = "2.0.18"
 
 [libraries]
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }

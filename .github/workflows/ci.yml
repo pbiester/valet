@@ -18,12 +18,12 @@ jobs:
         java: [ '17', '21' ]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       # The subprocess tests (ProcessBoundaryCli) require a POSIX shell and self-skip on
       # Windows; every OS-independent test still runs there.
       - run: ./gradlew build
@@ -33,16 +33,16 @@ jobs:
     name: bundle jar
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Build the shaded bundle jar
         run: ./gradlew :bundle:shadowJar
       - name: Upload the bundle jar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: valet-bundle
           path: bundle/build/libs/valet-bundle-*.jar
@@ -55,12 +55,12 @@ jobs:
       BOUNDARY_VERSION: '0.21.3'
       ADMIN_PW: password
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       # The build downloads (and checksum-verifies) the boundary CLI itself — no manual install.
       - name: Download boundary CLI
