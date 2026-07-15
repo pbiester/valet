@@ -185,5 +185,5 @@ Linux only, standing up `boundary dev` itself.
 
 ## Licence
 
-[Apache-2.0](LICENSE). See [SECURITY.md](SECURITY.md) for how credentials are handled and
+[MIT](LICENSE). See [SECURITY.md](SECURITY.md) for how credentials are handled and
 how to report a vulnerability.

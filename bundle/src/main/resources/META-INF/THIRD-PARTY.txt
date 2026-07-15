@@ -1,0 +1,30 @@
+Third-party components bundled in valet-bundle
+==============================================
+
+Valet itself is licensed under the MIT License (see the LICENSE file in the
+source repository: https://github.com/pbiester/valet).
+
+This fat JAR additionally bundles the third-party components below. Each one's
+license text is included in this JAR under META-INF/ at the path noted.
+
+- PostgreSQL JDBC Driver (org.postgresql:postgresql)
+    License: BSD 2-Clause
+    Text:    META-INF/LICENSE
+
+- Jackson: jackson-databind, jackson-core, jackson-annotations
+  (com.fasterxml.jackson.core), relocated to dev.isonet.valet.shaded.jackson
+    License: Apache License 2.0
+    Text:    META-INF/licenses/Apache-2.0.txt  and  META-INF/NOTICE
+
+- SCRAM / SASLprep (com.ongres.scram, com.ongres.stringprep)
+    License: BSD (see included text)
+    Text:    META-INF/licenses/com.ongres.scram/... and .../com.ongres.stringprep/...
+
+- Checker Framework qualifiers (org.checkerframework:checker-qual)
+    License: MIT
+    Text:    META-INF/LICENSE.txt
+
+- FastDoubleParser and Schubfach (bundled by Jackson)
+    Text:    META-INF/FastDoubleParser-LICENSE,
+             META-INF/FastDoubleParser-ThirdParty-LICENSE,
+             META-INF/Schubfach-LICENSE
