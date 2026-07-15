@@ -2,7 +2,7 @@
 jackson = "2.22.1"
 postgresql = "42.7.13"
 junit = "6.1.2"
-testcontainers = "1.21.4"
+testcontainers = "2.0.5"
 shadow = "9.5.1"
 hikaricp = "7.1.0"
 slf4j = "2.0.18"
